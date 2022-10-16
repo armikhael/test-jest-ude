@@ -33,12 +33,32 @@ function Form() {
     }
   };
 
+  const handleBlur = (event) => {
+    const { name, value } = event.target;
+    setFormError({
+      ...formError,
+      [name]: value.length ? "" : `The ${name} isrequired`,
+    });
+  };
+
   return (
     <div className="Form">
       <h1>Form</h1>
       <form onSubmit={handleSubmit}>
-        <TextField id="name" label="name" helperText={formError.name} />
-        <TextField id="size" label="size" helperText={formError.size} />
+        <TextField
+          id="name"
+          label="name"
+          name="name"
+          helperText={formError.name}
+          onBlur={handleBlur}
+        />
+        <TextField
+          id="size"
+          label="size"
+          name="size"
+          helperText={formError.size}
+          onBlur={handleBlur}
+        />
         <InputLabel htmlFor="type">Type</InputLabel>
         <Select
           native
