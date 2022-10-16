@@ -1,5 +1,5 @@
 import React from "react";
-import { screen, render } from "@testing-library/react";
+import { screen, render, fireEvent } from "@testing-library/react";
 
 import Form from "./form";
 
@@ -17,5 +17,21 @@ describe("when the form is mounted", () => {
     expect(screen.getByText(/electronic/i)).toBeInTheDocument();
     expect(screen.getByText(/furniture/i)).toBeInTheDocument();
     expect(screen.getByText(/clothing/i)).toBeInTheDocument();
+  });
+
+  test("should render the form buttons", async () => {
+    expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument();
+  });
+});
+
+describe("when the user submit", () => {
+  test("should display validation messages", () => {
+    render(<Form />);
+    expect(screen.queryByText(/The name isrequired/i)).not.toBeInTheDocument();
+    const button = screen.getByRole("button", { name: /submit/i });
+    fireEvent.click(button);
+    expect(screen.queryByText(/The name isrequired/i)).toBeInTheDocument();
+    expect(screen.queryByText(/The size isrequired/i)).toBeInTheDocument();
+    expect(screen.queryByText(/The type isrequired/i)).toBeInTheDocument();
   });
 });
