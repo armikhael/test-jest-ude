@@ -1,9 +1,18 @@
 import React from "react";
-import { screen, render, fireEvent } from "@testing-library/react";
+import { screen, render, fireEvent, waitFor } from "@testing-library/react";
+import { rest } from "msw";
+import { setupServer } from "msw/node";
 
 import Form from "./form";
 
+const server = setupServer(
+  rest.get("/products", (req, res, ctx) => res(ctx.status(201)))
+);
+
+beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }));
+afterAll(() => server.close());
 beforeEach(() => render(<Form />));
+afterEach(() => server.resetHandlers());
 
 describe("when the form is mounted", () => {
   test("should render the form", () => {
@@ -24,13 +33,15 @@ describe("when the form is mounted", () => {
 });
 
 describe("when the user submit", () => {
-  test("should display validation messages", () => {
+  test("should display validation messages", async () => {
     expect(screen.queryByText(/The name isrequired/i)).not.toBeInTheDocument();
     const button = screen.getByRole("button", { name: /submit/i });
     fireEvent.click(button);
-    expect(screen.queryByText(/The name isrequired/i)).toBeInTheDocument();
-    expect(screen.queryByText(/The size isrequired/i)).toBeInTheDocument();
-    expect(screen.queryByText(/The type isrequired/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText(/The name isrequired/i)).toBeInTheDocument();
+      expect(screen.queryByText(/The size isrequired/i)).toBeInTheDocument();
+      expect(screen.queryByText(/The type isrequired/i)).toBeInTheDocument();
+    });
   });
 });
 
@@ -50,5 +61,15 @@ describe("Whenn the user blurs an empty field", () => {
       target: { name: "size", value: "" },
     });
     expect(screen.queryByText(/The size isrequired/i)).toBeInTheDocument();
+  });
+});
+
+describe("when the user submits the form", () => {
+  test("should the submit button disabled unitel the request is done", async () => {
+    const submitBtn = screen.getByRole("button", { name: /submit/i });
+    expect(submitBtn).not.toBeDisabled();
+    fireEvent.click(submitBtn);
+    expect(submitBtn).toBeDisabled();
+    await waitFor(() => expect(submitBtn).not.toBeDisabled());
   });
 });

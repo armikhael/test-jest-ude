@@ -5,13 +5,15 @@ import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
 
 function Form() {
+  const [isSaving, setSaving] = useState(false);
   const [formError, setFormError] = useState({
     name: "",
     size: "",
     type: "",
   });
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setSaving(true);
     const { name, size, type } = event.target.elements;
     if (!name.value) {
       setFormError((prevState) => ({
@@ -31,6 +33,14 @@ function Form() {
         type: "The type isrequired",
       }));
     }
+    await setTimeout(function () {
+      fetch("/products", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+    }, 5000);
+
+    setSaving(false);
   };
 
   const handleBlur = (event) => {
@@ -74,7 +84,9 @@ function Form() {
           <option value={"clothing"}>clothing</option>
         </Select>
         {formError.type.length > 0 && <p>{formError.type}</p>}
-        <Button type="submit">Submit</Button>
+        <Button fullWidth disabled={isSaving} type="submit">
+          Submit
+        </Button>
       </form>
     </div>
   );
